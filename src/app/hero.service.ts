@@ -40,6 +40,9 @@ export class HeroService {
   private log(message: string) {
     this.messageService.add('HeroService: ${message}');
   }
+  const httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  }
   /** GET hero by id. Will 404 if id not found */
   getHero(id: number): Observable<Hero> {
     const url = `${this.heroesUrl}/${id}`;
@@ -55,5 +58,20 @@ export class HeroService {
         tap(heroes => this.log('fetched heroes')),
         catchError(this.handleError('getHeroes', []))
       );
+  }
+  addHero (hero: Hero): Observable<Hero> {
+    return this.http.post<Hero>(this.heroesUrl, hero, httpOptions).pipe(
+      tap((hero: Hero) => this.log(`added hero w/ id=${hero.id}`)),
+      catchError(this.handleError<hero>('addHero'))
+    );
+  }
+  deleteHero (hero: Hero | number): Observable<Hero> {
+    const id = typeof hero === 'number' ? hero : hero.id;
+    const url = `${this.heroesUrl}/${id}`;
+
+    return this.http.delete<Hero>(url, httpOptions).pipe(
+      tap(_=> this.log(`deleted hero id=${id}`)),
+      catchError(this.handleError<Hero>('deleteHero'))
+    );
   }
 }
